@@ -56,10 +56,11 @@ class Aluno {
     String ano;
     String semestre;
 
-    ano = '20' + ra.substring(6, 2);
-    semestre = ra.substring(8, 1);
+    ano = '20' + ra.substring(6, 8);
+    print(ano);
+    semestre = ra.substring(8);
 
-    if (semestre == '1')
+    if (semestre.startsWith("1"))
       this._semestreMat = '1º Sem/' + ano;
     else
       this._semestreMat = '2º Sem/' + ano;
@@ -68,7 +69,7 @@ class Aluno {
   findTurno(String ra) {
     String turno;
 
-    turno = ra.substring(9, 1);
+    turno = ra.substring(9, 10);
     switch (turno) {
       case '1':
         {

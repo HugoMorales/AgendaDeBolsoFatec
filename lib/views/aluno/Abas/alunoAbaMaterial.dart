@@ -8,15 +8,23 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:agenda_fatec/models/Material.dart' as files;
 import 'package:folder_picker/folder_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
-Future<void> downloadFile(files.Material arquivo) async {
+Future<String> downloadFile(files.Material arquivo, Turma turma) async {
   StorageReference ref = FirebaseStorage.instance.ref().child(arquivo.storageReference);
   String downloadURL = arquivo.publicURL;
   final http.Response downloadData = await http.get(downloadURL);
-    final Directory systemTempDir = Directory.systemTemp;
-    print(systemTempDir.path);
-    final File tempFile = File('${systemTempDir.path}/' + arquivo.nomeArquivo);
+    Directory appRoot = await getExternalStorageDirectory();
+    Directory downloadDirectory = new Directory(appRoot.path + "/" + turma.nomeTurma);
+    bool dirExists = await downloadDirectory.exists();
+    
+    if(!dirExists){
+      await downloadDirectory.create();
+    }
+
+    final File tempFile = File('${downloadDirectory.path}/' + arquivo.nomeArquivo);
     if (tempFile.existsSync()) {
       await tempFile.delete();
     }
@@ -30,9 +38,11 @@ Future<void> downloadFile(files.Material arquivo) async {
       'Success!\nDownloaded $name \nUrl: $downloadURL'
       '\npath: $path \nBytes Count :: $byteCount',
     );
+
+    return (tempFile.path);
 }
 
-Widget createListTileData(BuildContext context, files.Material arquivo) {
+Widget createListTileData(BuildContext context, files.Material arquivo, Turma turma) {
   String title = arquivo.nomeArquivo;
 
   return new Card(
@@ -49,9 +59,9 @@ Widget createListTileData(BuildContext context, files.Material arquivo) {
               icon: Icon(Icons.cloud_download,
                   color: Theme.of(context).accentColor, size: 30),
               onPressed: () async {
-                print('downloading');
-                await downloadFile(arquivo);
-                createDialog('Downloaded', context);
+                createDialog("Arquivo será baixado\nEspere o diálogo de confirmação ao final do download", context);
+                String filePath = await downloadFile(arquivo, turma);
+                createDialog("download concluído!\nO arquivo se encontra em " + filePath, context);
               },
             ),
             title: Text(title,
@@ -65,13 +75,6 @@ Widget buildAbaMaterial(BuildContext context, Turma turma) {
   return Container(
       height: 510,
       child: Scaffold(
-          floatingActionButton: FloatingActionButton(
-            child: Icon(
-              Icons.cloud_download,
-              color: Colors.white,
-            ),
-            onPressed: () {},
-          ),
           body: Container(
             height: 500,
             padding: EdgeInsets.only(top: 5, bottom: 5),
@@ -121,7 +124,7 @@ Widget buildAbaMaterial(BuildContext context, Turma turma) {
                           return new ListView.builder(
                             itemCount: arquivos.length,
                             itemBuilder: (context, i) {
-                              return createListTileData(context, arquivos[i]);
+                              return createListTileData(context, arquivos[i], turma);
                             },
                           );
                         }

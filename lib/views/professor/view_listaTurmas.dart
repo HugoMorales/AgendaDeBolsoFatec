@@ -5,6 +5,7 @@ import 'package:agenda_fatec/models/Turma.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:agenda_fatec/views/professor/view_telaPrincipalTurma.dart';
 import 'package:agenda_fatec/views/professor/view_novaTurma.dart';
+import 'package:agenda_fatec/utils.dart';
 
 Widget createListTile(BuildContext context, Disciplina disciplina, Turma turma,
     List<Turma> turmas) {
@@ -93,7 +94,44 @@ class _ListaTurmasState extends State<ListaTurmas> {
                           'Excluir Disciplina',
                           style: TextStyle(color: Colors.white),
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+              showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      content: Text('Tem certeza que deseja excluir ' +
+                          widget.disciplina.nome +
+                          ', todas as suas turmas e todo o seu conteúdo?'),
+                      actions: <Widget>[
+                        new FlatButton(
+                          child: Text('Cancelar'),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                        new FlatButton(
+                          child: Text('Sim'),
+                          onPressed: () async {
+                            QuerySnapshot query = await Firestore.instance.collection("Turmas").where("idDiscTurma", isEqualTo: widget.disciplina.docId).getDocuments();
+                            Turma auxDelete;
+
+                            for(int i = 0; i < query.documents.length; i++){
+                              auxDelete = new Turma();
+                              auxDelete.fromSnapshot(query.documents[i]);
+                              await deleteTurma(auxDelete);
+                            }
+
+                            await Firestore.instance.collection("Disciplinas").document(widget.disciplina.docId).delete();
+
+                            Navigator.of(context).pop();
+                            Navigator.of(context).pop();
+                            
+                          },
+                        )
+                      ],
+                    );
+                  });
+            },
                         backgroundColor: Colors.red,
                         icon: Icon(
                           Icons.delete_sweep,

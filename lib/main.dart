@@ -26,9 +26,10 @@ class MyApp extends StatelessWidget {
           appBarTheme: AppBarTheme(
               textTheme: TextTheme(
                   title: TextStyle(color: Colors.white, fontSize: 25)))),
-      //home: new Login()
-      home: SelecionarUsuario(),
+      home: new Login()
+      //home: SelecionarUsuario(),
       //home: new Cadastro()
+      
     );
   }
 }

@@ -1,7 +1,9 @@
 import 'package:agenda_fatec/models/Aluno.dart';
 import 'package:agenda_fatec/models/Disciplina.dart';
+import 'package:agenda_fatec/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:agenda_fatec/models/Turma.dart';
+import 'package:agenda_fatec/models/Material.dart' as files;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:agenda_fatec/views/professor/view_codTurma.dart';
@@ -35,8 +37,7 @@ Widget buildAbaOpcoes(
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) =>
-                          ListaAlunos(turma: turma)));
+                      builder: (context) => ListaAlunos(turma: turma)));
             },
           )),
       Card(
@@ -57,8 +58,7 @@ Widget buildAbaOpcoes(
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) =>
-                          ListaSolicitacoes(turma: turma)));
+                      builder: (context) => ListaSolicitacoes(turma: turma)));
             },
           )),
       Card(
@@ -95,7 +95,35 @@ Widget buildAbaOpcoes(
                 maxLines: 1,
                 textAlign: TextAlign.left,
                 style: TextStyle(fontSize: 20)),
-            onTap: () {},
+            onTap: () {
+              showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      content: Text('Tem certeza que deseja excluir ' +
+                          turma.nomeTurma +
+                          'e todo o seu conteúdo?'),
+                      actions: <Widget>[
+                        new FlatButton(
+                          child: Text('Cancelar'),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                        new FlatButton(
+                          child: Text('Sim'),
+                          onPressed: () async {
+                            await deleteTurma(turma);
+
+                            Navigator.of(context).pop();
+                            Navigator.of(context).pop();
+                            Navigator.of(context).pop();
+                          },
+                        )
+                      ],
+                    );
+                  });
+            },
           )),
     ]),
   );
